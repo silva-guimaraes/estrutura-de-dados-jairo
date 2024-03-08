@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -34,40 +35,64 @@ void localizar(lista_de* l, char* nome) {
     printf("\n");
 }
 
-void inserir(lista_de* l, aluno* a, char pos, int indice) {
-    bool is_ultimo = (indice == l->tamanho-1);
+void inserir(lista_de* lista, aluno* a, char pos, int indice) {
+    // se elemento sendo adicionado sera o ultimo.
+    bool is_ultimo = (indice == lista->tamanho-1);
+    // se elemento sendo adicionado será o primeiro.
     bool is_primeiro = (indice == 0);
-    l->tamanho++;
 
-    if (!l->ultimo) {
-        l->primeiro = a;
-        l->ultimo = a;
+    lista->tamanho++;
+
+    // caso nenhum elemento esteja presente na lista, fazer com que primeiro e ultimo
+    // apontem para o unico elemento da lista.
+    if (!lista->ultimo) {
+        lista->primeiro = a;
+        lista->ultimo = a;
         return;
     }
     
+    // I == inserir node no inicio da lista
     if (pos == 'I' || is_primeiro) {
-        a->next = l->primeiro;
-        l->primeiro->prev = a;
-        l->primeiro = a;
+        a->next = lista->primeiro;
+        lista->primeiro->prev = a;
+        lista->primeiro = a;
         return;
 
+    // F == inserir node no final da lista
     } else if (pos == 'F' || is_ultimo ) {
-        l->ultimo->next = a;
-        a->prev = l->ultimo;
-        l->ultimo = a;
+        lista->ultimo->next = a;
+        a->prev = lista->ultimo;
+        lista->ultimo = a;
         return;
 
+    // N == inserir node no indice
+    // qualquer outro caractere é um erro por parte do usuario
     } else if (pos != 'N') {
-        fprintf(stderr, "pos invalida: %c, tamanho: %d\n", pos, l->tamanho);
+        fprintf(stderr, "pos invalida: %c, tamanho: %d\n", pos, lista->tamanho);
         exit(1);
     }
 
-    aluno* alvo = localizar_indice(l, indice);
+    // suponhamos a seguinte lista:
+    // a b c d e f g h i
+    // suponhamos inserir um elemento novo (x) no indice 2, contando do 0:
+    // a b c d e f g h i
+    //     ^
+    // resultado:
+    // a b x c d e f g h i
 
+    // pegar referencia do node na lista. seguindo o exemplo acima, esse seria o 'c'
+    aluno* alvo = localizar_indice(lista, indice);
+
+    // prévio de 'x' aponta para prévio de 'c': 'b'
     a->prev = alvo->prev;
+    // proximo de 'x' aponta para 'c'
     a->next = alvo;
+    // proximo de 'b', prévio de 'c', aponta para 'x' 
     alvo->prev->next = a;
+    // prévio de 'c' aponta para 'x'
     alvo->prev = a;
+
+    // voilà
 }
 
 void listar(lista_de *l) {
@@ -81,18 +106,35 @@ void listar(lista_de *l) {
 
 void excluir(lista_de *l, int indice) {
 
+    // se elemento sendo excluido é o ultimo.
     bool is_ultimo = (indice == l->tamanho-1);
 
     l->tamanho--;
 
+    // se elemento for o primeiro, alterar para quem aponta o 'primeiro' da lista.
     if (indice == 0) {
+        aluno* primeiro = l->primeiro;
+
+        // prévio do segundo agora é nulo
         l->primeiro->next->prev = NULL;
+        // primeiro da lista aponta para o segundo
         l->primeiro = l->primeiro->next;
+
+        // liberar primeiro
+        // free(primeiro);
         return;
 
     } else if (is_ultimo) {
+        // lista já guarda endereço do ultimo node
+        aluno* ultimo = l->ultimo;
+
+        // proximo do penultimo vira nulo
         l->ultimo->prev->next = NULL;
+        // ultimo da lista aponta para o penultimo
         l->ultimo = l->ultimo->prev;
+
+        // liberar ultimo
+        // free(ultimo);
         return;
 
     } else if (indice < 0 || indice >= l->tamanho) {
@@ -148,12 +190,10 @@ int main(void) {
     inserir(lista, teste3, 'F', -1);
     inserir(lista, teste4, 'N', 0);
 
-    // inserir(lista, teste, 'F', -1);
-    // inserir(lista, teste2, 'F', -1);
-    // inserir(lista, teste3, 'F', -1);
-    // inserir(lista, teste4, 'F', -1);
+    listar(lista);
 
-    // localizar(lista, "daniel");
+    excluir(lista, lista->tamanho-1);
+    excluir(lista, 0);
 
     listar(lista);
 
