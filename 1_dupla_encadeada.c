@@ -45,15 +45,15 @@ void inserir(lista_de* lista, int indice, aluno* a) {
     if (indice == -1) 
         indice = lista->tamanho-1;
 
-    // se elemento sendo adicionado sera o ultimo.
+    // se elemento sendo adicionado será o ultimo.
     bool is_ultimo = (indice == lista->tamanho-1);
     // se elemento sendo adicionado será o primeiro.
     bool is_primeiro = (indice == 0);
 
     lista->tamanho++;
 
-    // caso nenhum elemento esteja presente na lista, fazer com que primeiro e ultimo
-    // apontem para o unico elemento da lista.
+    // caso nenhum elemento esteja presente na lista, fazer com que os ponteiros 'primeiro' e 'ultimo'
+    // apontem para esse nosso novo elemento sendo adicionado.
     if (!lista->ultimo) {
         lista->primeiro = a;
         lista->ultimo = a;
@@ -111,53 +111,54 @@ void listar(lista_de *l) {
     printf("\n");
 }
 
-void excluir(lista_de *l, int indice) {
+void excluir(lista_de *lista, int indice) {
 
     // se elemento sendo excluido é o ultimo.
-    bool is_ultimo = (indice == l->tamanho-1);
+    bool is_ultimo = (indice == lista->tamanho-1);
 
-    l->tamanho--;
+    lista->tamanho--;
 
     if (indice == 0 && is_ultimo) {
         // todo: 
-        // free(l->primeiro);
+        free(lista->primeiro);
 
-        l->primeiro = NULL;
-        l->ultimo = NULL;
+        lista->primeiro = NULL;
+        lista->ultimo = NULL;
         return;
     }
     // se elemento for o primeiro, alterar para quem aponta o 'primeiro' da lista.
     if (indice == 0) {
-        aluno* primeiro = l->primeiro;
+        aluno* primeiro = lista->primeiro;
 
         // prévio do segundo agora é nulo
-        l->primeiro->next->prev = NULL;
+        lista->primeiro->next->prev = NULL;
         // primeiro da lista aponta para o segundo
-        l->primeiro = l->primeiro->next;
+        lista->primeiro = lista->primeiro->next;
 
         // liberar primeiro
-        // free(primeiro);
+        free(primeiro);
         return;
 
+    // a mesma coisa com o ultimo
     } else if (is_ultimo) {
         // lista já guarda endereço do ultimo node
-        aluno* ultimo = l->ultimo;
+        aluno* ultimo = lista->ultimo;
 
         // proximo do penultimo vira nulo
-        l->ultimo->prev->next = NULL;
+        lista->ultimo->prev->next = NULL;
         // ultimo da lista aponta para o penultimo
-        l->ultimo = l->ultimo->prev;
+        lista->ultimo = lista->ultimo->prev;
 
         // liberar ultimo
-        // free(ultimo);
+        free(ultimo);
         return;
 
-    } else if (indice < 0 || indice >= l->tamanho) {
-        fprintf(stderr, "indice invalido: %d, tamanho: %d\n", indice, l->tamanho);
+    } else if (indice < 0 || indice >= lista->tamanho) {
+        fprintf(stderr, "indice invalido: %d, tamanho: %d\n", indice, lista->tamanho);
         exit(1);
     }
 
-    aluno* alvo = localizar_indice(l, indice);
+    aluno* alvo = localizar_indice(lista, indice);
 
     alvo->prev->next = alvo->next;
     alvo->next->prev = alvo->prev;
@@ -170,13 +171,12 @@ void alterar(lista_de* l, aluno* novo, int indice) {
     excluir(l, indice+1);
 }
 
-aluno* new_aluno(char* nome, char* telefone, int idade) {
-    aluno* a = malloc(sizeof(aluno));
-    a->nome = nome;
-    a->idade = idade;
-
-    return a;
-}
+// aluno* new_aluno(char* nome, char* telefone, int idade) {
+//     aluno* a = malloc(sizeof(aluno));
+//     a->nome = nome;
+//     a->idade = idade;
+//     return a;
+// }
 
 aluno* prompt_novo_aluno(lista_de *lista) {
     char* nome = malloc(256 * sizeof(char));
@@ -201,24 +201,6 @@ aluno* prompt_novo_aluno(lista_de *lista) {
 }
 
 int main(void) {
-
-    // favor nunca jamais adicionar o mesmo aluno mais de uma vez na lista.
-    aluno* teste = &(aluno) { 
-        .nome = "daniel", .idade = 22, .telefone = "123123",
-        .prev = NULL, .next = NULL,
-    };
-    aluno* teste2 = &(aluno) { 
-        .nome = "breno", .idade = 20, .telefone = "123123",
-        .prev = NULL, .next = NULL,
-    };
-    aluno* teste3 = &(aluno) { 
-        .nome = "raphael", .idade = 21, .telefone = "123123",
-        .prev = NULL, .next = NULL,
-    };
-    aluno* teste4 = &(aluno) { 
-        .nome = "daniel", .idade = 21, .telefone = "123123",
-        .prev = NULL, .next = NULL,
-    };
 
     lista_de* lista = &(lista_de){ 0 };
 
@@ -262,7 +244,8 @@ int main(void) {
                     indice = lista->tamanho - 1;
 
                 else if (posicao == 'n') {
-                    printf("insira indice para adicionar aluno (0 - %d):", lista->tamanho-1);
+                    printf("insira indice para adicionar aluno (0 - %d):",
+                            lista->tamanho ? lista->tamanho-1 : 0);
                     scanf("%d", &indice);
                 } 
                 else {
@@ -320,20 +303,6 @@ int main(void) {
         }
     }
     while (cont);
-
-
-
-    inserir(lista, -1, teste);
-    inserir(lista, -1, teste2);
-    inserir(lista, -1, teste3);
-    inserir(lista, 0, teste4);
-
-    listar(lista);
-
-    excluir(lista, lista->tamanho-1);
-    excluir(lista, 0);
-
-    listar(lista);
 
     return 0;
 }
