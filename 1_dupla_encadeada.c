@@ -14,12 +14,24 @@ typedef struct aluno {
     struct aluno *next, *prev;
 } aluno;
 
+// lista encadeada em si
 typedef struct lista_duplamente_encadeada {
     aluno *primeiro, *ultimo;
     int tamanho;
 } lista_de;
 
-// localizar por indice = lista[indice]. nao o que ele pediu
+// LOCALIZAR
+aluno* localizar(lista_de* l, char* nome) {
+    // itera por toda a lista e lista todos aluno que tenham o nome selecionado
+    for (aluno* a = l->primeiro; a != NULL; a = a->next) {
+        if (strcmp(a->nome, nome) == 0) {
+            return a;
+        }
+    }
+    return NULL;
+}
+
+// procura um aluno por indice
 aluno* localizar_indice(lista_de* l, int indice) {
     aluno* alvo = l->primeiro;
 
@@ -28,20 +40,11 @@ aluno* localizar_indice(lista_de* l, int indice) {
     return alvo;
 }
 
-aluno* localizar(lista_de* l, char* nome) {
-    for (aluno* a = l->primeiro; a != NULL; a = a->next) {
-        if (strcmp(a->nome, nome) == 0) {
-            // printf("nome: %s, idade: %d, tel: %s\n", a->nome, a->idade, a->telefone);
-            return a;
-        }
-    }
-
-    return NULL;
-    // printf("\n");
-}
-
+// INSERIR
+// inserir e excluir em uma lista encadeada tem alguns caveats que são um pouquinho chatos
 void inserir(lista_de* lista, int indice, aluno* a) {
 
+    // utilidade para adicionar aluno ao fim da lista sem precisa do indice exato
     if (indice == -1) 
         indice = lista->tamanho-1;
 
@@ -73,11 +76,6 @@ void inserir(lista_de* lista, int indice, aluno* a) {
         return;
     }
 
-    // else if (pos != 'N') {
-    //     fprintf(stderr, "pos invalida: %c, tamanho: %d\n", pos, lista->tamanho);
-    //     exit(1);
-    // }
-
     // suponhamos a seguinte lista:
     // a b c d e f g h i
     // suponhamos inserir um elemento novo (x) no indice 2, contando do 0:
@@ -101,6 +99,7 @@ void inserir(lista_de* lista, int indice, aluno* a) {
     // voilà
 }
 
+// LISTAR
 void listar(lista_de *l) {
     printf("exibindo %d %s em lista:\n", l->tamanho, l->tamanho == 1 ? "item" : "itens");
 
@@ -111,6 +110,7 @@ void listar(lista_de *l) {
     printf("\n");
 }
 
+// EXCLUIR
 void excluir(lista_de *lista, int indice) {
 
     // se elemento sendo excluido é o ultimo.
@@ -118,8 +118,8 @@ void excluir(lista_de *lista, int indice) {
 
     lista->tamanho--;
 
+    // se lista tem tamanho 1 e usuário deseja excluir esse unico elemento
     if (indice == 0 && is_ultimo) {
-        // todo: 
         free(lista->primeiro);
 
         lista->primeiro = NULL;
@@ -165,19 +165,14 @@ void excluir(lista_de *lista, int indice) {
     // todo: fazer free
 }
 
+// ALTERAR
 void alterar(lista_de* l, aluno* novo, int indice) {
     // não é isso que ele quer mas funciona
     inserir(l, indice, novo);
     excluir(l, indice+1);
 }
 
-// aluno* new_aluno(char* nome, char* telefone, int idade) {
-//     aluno* a = malloc(sizeof(aluno));
-//     a->nome = nome;
-//     a->idade = idade;
-//     return a;
-// }
-
+// inserir e alterar pedem um input do usuario para ler um novo aluno
 aluno* prompt_novo_aluno(lista_de *lista) {
     char* nome = malloc(256 * sizeof(char));
     printf("nome: ");
@@ -196,7 +191,6 @@ aluno* prompt_novo_aluno(lista_de *lista) {
         .nome = nome, .idade = idade, .telefone = telefone,
             .prev = NULL, .next = NULL
     };
-
     return a;
 }
 
